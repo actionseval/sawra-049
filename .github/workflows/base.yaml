@@ -1,0 +1,26 @@
+name: Test
+# on: push
+on: [repository_dispatch, workflow_dispatch]
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        python-version:
+          - '3.13'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: |
+          apt install -y adduser base-files bash bash-completion binutils-common:amd64 command-not-found coreutils cron-daemon-common debconf dhcpcd-base e2fsprogs fuse3 hdparm keyutils libattr1:amd64 libaudit-common libc-bin libc6:amd64 libmagic1t64:amd64 libmecab2:amd64 libpam-runtime libpython3.13-stdlib:amd64 libsensors-config libtirpc-common locales login logrotate lsb-release ltrace man-db media-types multipath-tools nano netbase nftables openssl overlayroot procps python3.13 rsyslog screen sudo tar tzdata ucf usb-modeswitch util-linux walinuxagent wget
+          pip install setuptools==80.10.2
+      - name: Execute Tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[async,dev,test]
+          coverage run -m unittest discover tests
